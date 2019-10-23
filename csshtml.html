@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>无标题文档</title>
+	<style>
+	ul {
+		list-style-type: none;
+		margin: 0px;
+		padding: 50px;
+		overflow: hidden;
+		background-color:#AF1619;
+		width: 100%;
+		height: 110px;
+		background: #15A43C;
+	}
+	li{
+		float: left;
+	}
+	li a, .dropdtn {
+		display: inline-block;
+		color: white;
+		text-align: center;
+		padding: 14px 10px;
+		text-decoration: none;
+		font-size: 40px;
+	}
+	li a:hover, .dropdwn:hover .dropdtn{
+		background-color: red;
+	}
+	li .dropdwn {
+		display: inline-block;
+	}
+	.dropdwn-content {
+		display: none;
+		position: absolute;
+		background-color:#1C919B;
+		min-width: 180px;
+		box-shadow: 0px 8px 16px 0px rgba (0.0.0.0.2);
+	}
+	.dropdwn-content a {
+	color: black;
+		padding: 12px 16px;
+		text-decoration: none;
+		display: block;
+	}
+		.dropdwn-content a:hover {background-color: #E107D3}
+		.dropdwn:hover .dropdwn-content {
+			display: block;
+		}
+	</style>
+</head>
+	
+
+<body>
+	<ul>
+	<li> <a class="active" href="#home">主页</a></li>
+		<li> <a href="#mews">没有效果</a></li>
+		<li class="dropdwn">
+		<a href="#" class="dropdtn">下拉菜单</a>
+		<div class="dropdwn-content">
+			<a href="#">菜单</a>
+			<a href="#">菜单</a>
+			<a href="#">菜单</a>
+			</div>
+		</li>
+	</ul>
+</body>
+</html>
