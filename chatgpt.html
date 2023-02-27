@@ -1,0 +1,347 @@
+<!-- 本代码由小风博客分享：blog.evv1.com -->
+<!-- 有问题在博客询问 不添加联系方式 -->
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+ 
+<!-- 用来显示本地存储还有多少空间 -->
+<div id="storageInfo"></div>
+<!-- 清空本地储存可以写在标签内的炫酷一点的按钮 -->
+<button style=" 
+  align-items: center;
+  background: linear-gradient(45deg, #F44336, #FFEB3B, #4CAF50, #2196F3, #9C27B0);
+  background-size: 400%;
+  animation: rainbow 10s ease infinite;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 30px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  outline: none;
+  text-transform: uppercase;"
+  onclick="confirmClearLocalStorage()">
+  清空localStorage
+</button>
+
+<p>我的博客网站发布了一键搭建ChatGPT微信机器人/TG机器人/网页端机器人</p>
+<p>如果您没有ChatGPT账号？那可以去微信小程序搜索："小旋风WiFi" 在商城下单 8元一个账号（功能全部带 内含18美元）</p>
+<button style=" 
+  align-items: center;
+  background: linear-gradient(35deg, #F44336, #FFEB3B, #4CAF50, #2196F3, #9C27B0);
+  background-size: 300%;
+  animation: rainbow 10s ease infinite;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 24px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  outline: none;
+  text-transform: uppercase;"
+  onclick="zhuantiao()">
+  转跳博客网站
+</button>
+
+<style>
+    button {
+        display: block;
+        margin: 0 auto;
+    }
+    @keyframes rainbow {
+      0% {
+        background-position: 0%;
+      }
+      50% {
+        background-position: 100%;
+      }
+      100% {
+        background-position: 0%;
+      }
+    }
+ 
+    #chat-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+        }
+ 
+        #chat-window {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            width: 400px;
+            height: 400px;
+            background-color: #fff;
+            overflow-y: scroll;
+        }
+ 
+    /* 使view标签隐藏 */
+    /* .show {
+        display: flex;
+    }
+    .hide {
+        display: none;
+    } */
+    /* .nav-visible .toggle-view {
+        display: flex;
+    }
+    .nav-hidden .toggle-view {
+        display: none;
+    } */
+  </style>
+ 
+<div id="app" style="display: flex;flex-flow: column;margin: 20 ">
+    <scroll-view scroll-with-animation scroll-y="true" style="width: 100%;">
+        <!-- 用来获取消息体高度 -->
+        <view id="okk" scroll-with-animation>
+            <!-- 消息 -->
+            <view v-for="(x,i) in msgList" :key="i">
+                <!-- 用户消息 头像可选加入-->
+                <view v-if="x.my" style="display: flex;
+                flex-direction: column;
+                align-items: flex-end;">
+ 
+                    <view style="width: 400rpx; display: flex; align-items: center;">                        
+                        <view style="border-radius: 35px;background-color: #A9A9A9;">
+                            <text style="word-break: break-all;">{{x.msg}}&nbsp;&nbsp;</text>
+                        </view>
+                        <image src="https://img0.baidu.com/it/u=1660451776,2996676283&fm=253&fmt=auto&app=138&f=JPEG?w=256&h=256" style="width: 40px; height: 40px; border-radius: 20px;"></image>
+                        <!-- <image src="https://img2.woyaogexing.com/2017/07/07/67ca73a32fe97f63!400x400_big.jpg" style="width: 40px; height: 40px; border-radius: 80rpx;"></image> -->
+                    </view>
+ 
+                </view>
+                <!-- 机器人消息 -->
+                <view v-if="!x.my" style="display: flex;
+                flex-direction: row;
+                align-items: flex-start;">
+ 
+                    <view style="width: 500rpx;display: flex; align-items: center;">
+                        <image src="https://img1.baidu.com/it/u=3604470859,3633744879&fm=253&fmt=auto&app=120&f=JPEG?w=300&h=300" style="width: 40px; height: 40px; border-radius: 20px;"></image>
+                        <view style="border-radius: 35px;background-color: #87CEFA;">
+                            <text style="word-break: break-all;">&nbsp;&nbsp;{{x.msg}}</text>
+                            <!-- &nbsp;加两个空格，美观一些 -->
+                        </view>
+                    </view>
+                </view>
+            </view>
+ 
+ 
+            <view style="height: 130rpx;">
+ 
+            </view>
+        </view>
+ 
+    </scroll-view>
+ 
+   
+ 
+    <!-- 底部导航栏 -->
+    <view   ref="toggleView"   style="position: fixed;bottom:0px;width: 100%;display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;">
+        <view style="font-size: 55rpx;display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;width: 75%;
+    margin: 20;">
+ 
+            <input v-model="msg" type="text" style="width: 75%;
+            height: 45px;
+            border-radius: 50px;
+            padding-left: 20px;
+            margin-left: 10px;background-color: #f0f0f0;" @confirm="sendMsg" confirm-type="search"
+                placeholder-class="my-neirong-sm" placeholder="用一句简短的话描述您的问题" />
+            <button @click="sendMsg" :disabled="msgLoad" style="height: 45px;
+            width: 20%;;
+    color: #030303;    border-radius: 2500px;">{{sentext}}</button>
+        </view>
+    </view>
+ 
+ 
+ 
+ 
+    </view>
+ 
+    <!-- 点击按钮显示/隐藏导航栏 -->
+    <button  v-on:click="toggleNav" style="position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; background-color: #999; border: none; border-radius: 50%; color: #fff; font-size: 24px; text-align: center; line-height: 50px;"> {{ navVisible ? '显':'隐'}}</button>
+ 
+</div>
+ 
+ 
+ 
+<!-- 实时显示所剩余的本地储存内存大小 -->
+<script>
+    function updateStorageInfo() {
+    const usedSpace = JSON.stringify(localStorage).length;
+    const totalSpace = 5 * 1024 * 1024; // 5MB
+    const freeSpace = totalSpace - usedSpace;
+    const usedPercentage = (usedSpace / totalSpace) * 100;
+  
+    const storageInfoDiv = document.getElementById("storageInfo");
+    storageInfoDiv.innerHTML = `localStorage已使用 ${usedPercentage.toFixed(2)}%（${(usedSpace / 1024).toFixed(2)}KB），剩余 ${(freeSpace / 1024).toFixed(2)}KB`;
+    }
+ 
+    // 在页面加载时更新一次localStorage的使用情况
+    updateStorageInfo();
+ 
+    // 监听localStorage的变化，当有新的数据添加到localStorage中时更新使用情况
+    window.addEventListener("storage", function() {
+    updateStorageInfo();
+    });
+    // 在以上代码中，updateStorageInfo()函数会根据localStorage的占用大小和总大小计算出剩余大小和使用百分比，然后将这些信息显示在id为storageInfo的div元素中。
+    // 为了保证在页面加载时就能显示localStorage的使用情况，我们在代码中首先调用了updateStorageInfo()函数。
+    // 此外，为了实现实时更新localStorage使用情况的功能，我们还添加了一个storage事件监听器。当页面中有其他代码向localStorage中写入数据时，该事件监听器会自动被调用，从而更新localStorage的使用情况。
+ 
+</script>
+ 
+ 
+ 
+ 
+<!-- 清空本地储存 -->
+<script>
+    function confirmClearLocalStorage() {
+        if (confirm("您确定要清空localStorage吗？此操作不可撤销！")) {
+            localStorage.clear();
+            alert("localStorage已清空");
+        }
+    }
+    // 当点击按钮后，会调用clearLocalStorage函数，该函数会调用localStorage.clear()方法来清空所有的localStorage数据。最后弹出一个提示框，告诉用户localStorage已经被清空了。
+    //改进后↓
+    // 当用户点击按钮后，会调用confirmClearLocalStorage函数，该函数会弹出一个确认框，询问用户是否确定要清空localStorage。如果用户点击确认，函数会调用localStorage.clear()方法来清空localStorage中的所有数据，并弹出提示框告诉用户localStorage已经被清空了。如果用户点击取消，则不会执行清空localStorage的操作。
+</script>
+ 
+ <script>
+      function zhuantiao(){
+            window.location.href= "http://blog.evv1.com";
+        }
+ </script>
+ 
+<script>
+    
+    const { createApp } = Vue
+    createApp({
+        data() {
+            return {
+                navVisible: true,
+                api: '填写您的api 如果没有的话 请到微信小程序搜索：小旋风WiFi 购买一个账号 送科学上网',
+                msgLoad: false,
+                anData: {},
+                sentext: '发送',
+ 
+                animationData: {},
+                showTow: false,
+                msgList: [{
+                    my: false,
+                    msg: "你好我是openAI机器人,请问有什么问题可以帮助您?"
+                }],
+                msgContent: "",
+                msg: "",
+                //navVisible: true // 控制导航栏的显示/隐藏
+            }
+        },
+        methods: {
+            toggleNav() {
+                //const toggleBtn = document.getElementById('toggleBtn');
+                //const toggleView = document.getElementById('toggleView');
+                const toggleView = this.$refs.toggleView; // 通过 ref 获取元素
+ 
+                    //toggleView.classList.toggle('hide');
+                    this.navVisible = !this.navVisible;
+                   
+                    console.log(this.navVisible);
+                    if(this.navVisible){
+                        toggleView.style.display = 'flex';
+                    }
+                    else{
+                        toggleView.style.display = 'none';
+                    }
+                    
+                
+            },
+           
+            sendMsg() {
+ 
+                // 消息为空不做任何操作
+                if (this.msg == "") {
+                    return 0;
+                }
+                this.sentext = '请求中'
+                this.msgList.push({
+                    "msg": this.msg,
+                    "my": true
+                })
+                console.log(this.msg);
+                this.msgContent += ('YOU:' + this.msg + "\n")
+ 
+                // 添加聊天记录到localStorage中
+                let chatHistory = localStorage.getItem('chatHistory') || '[]';
+                chatHistory = JSON.parse(chatHistory);
+                chatHistory.push({
+                    "msg": this.msg,
+                    "my": true
+                });
+                localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+                
+                this.msgLoad = true
+                // 清除消息
+                this.msg = ""
+                axios.post('https://api.openai.com/v1/completions', {
+                    prompt: this.msgContent, max_tokens: 2048, model: "text-davinci-003"
+                }, {
+                    headers: { 'content-type': 'application/json', 'Authorization': 'Bearer ' + this.api }
+                }).then(res => {
+                    console.log(res);
+                    let text = res.data.choices[0].text.replace("openai:", "").replace("openai：", "").replace(/^\n|\n$/g, "")
+                    console.log(text);
+                    this.msgList.push({
+                        "msg": text,
+                        "my": false
+                    })
+                    this.msgContent += (text + "\n")
+ 
+                     // 添加聊天记录到localStorage中
+                    let chatHistory = localStorage.getItem('chatHistory') || '[]';
+                    chatHistory = JSON.parse(chatHistory);
+                    chatHistory.push({
+                        "msg": text,
+                        "my": false
+                    });
+                    localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+ 
+                    this.msgLoad = false
+                    this.sentext = '发送'
+                }).catch(error => {
+                    alert(error);//弹出异常
+                    let text = "" //重置text
+                    this.msgList.push({
+                        "msg": "服务异常，请重新发送..",
+                        "my": false
+                    })
+                    this.msgContent += (text + "\n")
+                    this.msgLoad = false
+                    this.sentext = '发送'//再次点击发送
+                });
+ 
+            },
+ 
+ 
+        }
+    }).mount('#app')
+    //这段代码的作用是将当前对话中的一条消息添加到聊天记录中，并将聊天记录存储在本地的localStorage中。
+ 
+    // 首先，代码通过localStorage.getItem('chatHistory')获取了本地存储的聊天记录，如果没有聊天记录则初始化为空数组'[]'。接着，代码使用JSON.parse将获取到的聊天记录字符串解析为数组类型。此时，chatHistory变量中保存的就是之前存储在本地的聊天记录。
+ 
+    // 然后，代码向chatHistory数组中添加了一条消息对象。该对象有两个属性，"msg"表示消息内容，"my"表示消息是否是自己发送的（即是否是用户自己发出的消息，true表示是，false表示否）。
+ 
+    // 最后，代码使用localStorage.setItem将更新后的chatHistory数组再次存储到本地。这里需要使用JSON.stringify将数组转换为字符串格式，才能存储到localStorage中。
+ 
+    // 这样一来，每次用户发送一条消息时，代码都会将该消息添加到聊天记录中，并将聊天记录保存到本地。下次用户再次访问页面时，就可以从localStorage中加载之前的聊天记录。
+</script>
