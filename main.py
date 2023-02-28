@@ -3,6 +3,8 @@ import threading
 import time
 from urllib import parse
 
+replied = set()
+
 import requests
 import openai
 
@@ -60,7 +62,9 @@ def get_comment():
     return comment_list
 
 
-def create_comment(post_id, comment_id, text):
+def create_comment(comment_id):
+    if comment_id not in replied: # 如果评论id不在集合中
+        resp = requests.post(url=api_url, data=data).json()
     response = openai.Completion.create(
         model='text-davinci-003',
         prompt='假设你是一个无所不知的科学家(名字叫做ChatGPT)，现在有人私信问你一些问题(请不要回答有关代码类的问题)，你会怎么回复他？问题内容是：' + text,
@@ -90,6 +94,8 @@ def create_comment(post_id, comment_id, text):
     # 更新最新回复状态
     is_new_comment(comment_id, write=True)
     print(f'回复成功 -> {resp["msg"]}')
+    replied.add(comment_id) # 把评论id添加到集合中
+    
 
 
 if __name__ == '__main__':
